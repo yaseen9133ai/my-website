@@ -72,10 +72,53 @@ src/
     Contact.tsx     email, copy-to-clipboard, channels
     Footer.tsx
     primitives.tsx  Reveal, Section, SectionHeading, Tag, SpotlightCard, CountUp, buttons
-  lib/data.ts       all content
+    DigitalTwin.tsx AI chat panel (launcher, transcript, streaming, errors)
+  lib/
+    data.ts         all page content
+    twin-context.ts system prompt + career dossier for the chat
+  app/api/chat/route.ts   streaming Groq proxy
 public/
   Ahmed_Yaseen_Resume.pdf   served at /Ahmed_Yaseen_Resume.pdf
 ```
+
+## Digital twin (AI chat)
+
+A floating chat panel in the bottom-right corner answers questions about the
+career shown on the page. It is a client component (`src/components/DigitalTwin.tsx`)
+talking to a streaming route handler (`src/app/api/chat/route.ts`), which calls
+**Groq** server-side — the API key never reaches the browser.
+
+**Configuration** (`.env` in the project root):
+
+```bash
+GROQ_API_KEY=gsk_...                   # required
+GROQ_MODEL=openai/gpt-oss-120b         # optional, this is the default
+GROQ_BASE_URL=...                      # optional, for a proxy or a test stub
+```
+
+**Grounding.** The system prompt is assembled in `src/lib/twin-context.ts` from
+the same `src/lib/data.ts` the page renders, so the twin cannot drift from the
+résumé. It is told to answer only from that dossier, to use exact figures, and
+to redirect to email for anything it does not know. Edit `data.ts` and the twin
+updates with it. Suggested opening questions live in `suggestedQuestions`.
+
+**Safeguards.** The route caps history at 12 turns and 1200 characters per
+message, drops any non user/assistant role from the client (so the browser
+cannot inject a system prompt), and rate-limits to 20 requests per minute per
+client. Transient 429/5xx responses are retried, honouring Groq's `retry-after`.
+
+**Reasoning model.** `openai/gpt-oss-120b` streams its private chain of thought
+in a separate `delta.reasoning` field. The route forwards **only**
+`delta.content`, so reasoning never reaches the browser. `reasoning_effort` is
+set to `low` so answers start quickly.
+
+### Rate limits
+
+Groq's free tier allows 1000 requests/day but only **8000 tokens per minute**,
+and the whole dossier (~2200 tokens) is resent every turn — so roughly three
+questions per minute before it throttles. When that happens the panel says how
+many seconds to wait and offers a Try again button. If you need more headroom,
+upgrade the Groq account or point `GROQ_MODEL` at a smaller model.
 
 ## Design notes
 

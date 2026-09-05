@@ -359,6 +359,14 @@ export const marquee = [
   "Docker",
 ];
 
+export const suggestedQuestions = [
+  "What is your PhD research about?",
+  "Walk me through your experience at SAP.",
+  "What have you shipped to production?",
+  "How deep is your LLM and agent experience?",
+  "Why the move from enterprise software to AI?",
+];
+
 export const sections = [
   { id: "about", label: "About" },
   { id: "impact", label: "Impact" },

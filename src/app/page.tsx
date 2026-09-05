@@ -10,6 +10,7 @@ import Capabilities from "@/components/Capabilities";
 import Credentials from "@/components/Credentials";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import DigitalTwin from "@/components/DigitalTwin";
 
 export default function Home() {
   return (
@@ -37,6 +38,8 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      <DigitalTwin />
     </>
   );
 }
